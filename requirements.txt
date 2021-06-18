@@ -1,0 +1,16 @@
+altgraph==0.17
+importlib-metadata==4.5.0
+numpy==1.19.5
+packaging==20.9
+pandas==1.1.5
+pyinstaller==4.3
+pyinstaller-hooks-contrib==2021.1
+pyparsing==2.4.7
+PyQt5==5.11.2
+PyQt5-sip==4.19.19
+python-dateutil==2.8.1
+pytz==2021.1
+six==1.16.0
+toml==0.10.2
+typing-extensions==3.10.0.0
+zipp==3.4.1

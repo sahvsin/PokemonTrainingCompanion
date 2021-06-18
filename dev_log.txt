@@ -1,0 +1,268 @@
+4/14/2021
+-Started looking at options for GUI dev with Python
+-among options decided to pursue PyQt
+-extracted data (stats) for ALL Pokemon for first 6 gens
+-compiled them in separate CSVs (one fore each gen since stats updated in some gens)
+
+
+
+4/17/2021
+-started learning PyQt
+-first installing it was trickier than expected, tried to install in a fresh virtual environment with PIP, but got errors with plugins
+	common error after researching online
+	solution: install outside of virtual environment using Linux (Ubuntu) package management (Apt)
+-started playing around, trying to make basic Hello World window pop up (window with text saying "Hello World")
+-then changed text to something more appropriate for my app
+-studied how to implement radio buttons (only 1 selectable at a time) and made 6, one for each gen from I to VI
+	all they do is print when selected (for now)
+
+
+
+4/18/2021
+-learned how to nest layouts and added an opening statement with directions above the 6 radio buttons (which are laid out horizontally)
+	very tricky to figure out (took some time)
+	learned that I need to make a wrapper widget in MainWindow class
+	add subwidgets to wrapper layout and set wrapper layout to wrapper widget
+	set wrapper widget as central widget
+	BUT new issue: radio buttons no longer do anything upon pressing (never calls onClick function)
+	need to learn how to use sub-widgets (nested)
+	fixed: forgot to refer to self when building and updating buttons 
+	not too sure why this worked honestly, maybe dereferenced or gone (or not accesed) when exiting function, rusty with OOP
+
+
+
+4/23/2021
+objective: want to change (expand to view next steps/options) current window or open new window after selecting gen
+-made the main window open a subwindow upon choosing a generation (radio button)
+-continued clicking on the same radio button does not create new/more subwindows
+-slightly modularized my stuff so far (separate methods and source files)
+-added 3 more radio buttons to select functionality (IV calculation, EV calculation, Pokemon Growth Tracking) to the main/initial window
+-grouped the function buttons and generation buttons separately so I can select one from each
+	otherwise, since they're all radio buttons, only 1 among their sum can be chosen
+-opened a blank subwindow ONLY after choosing a gen THEN a function 
+	only works in that specific order (can't choose function then gen, will have to choose another function then)
+	can't just choose from one group without choosing from the other (nothing will happen in this case)
+	took me some time to figure a solution (this one); took me until learning about grouping which simplified this a bit 
+
+
+
+4/25/2021
+objective: implement the subwindows OR try to fix the fact that I can't open a subwindow if I choose a fuinction THEN a gen (hide function buttons?)
+           if closing primary window, close sub ones too OR hide the primary window once subwindow appears
+-hit a hard wall on both fronts...
+-on the one hand, I had planned to use CSVs (or other external file types) to handle the databases of Pokemon stats and Pandas to read/organize the data
+	problem is, when installing PyQt5, I had to do a universal install (apt-get) outside of any virtual environments b/c of issues trying to use pip + virtualenv
+        now the only solutions are trying to fix the virtualenv conflict with PyQt5 or do a universal install of Pandas
+-really stumped on trying to fix the issue with clicking the function radio buttons before the generation radio buttons
+	not a whole lot of great documentation on PyQt5 to begin with
+	kinda hard to follow what's available
+	tried several things
+	until FINALLY got it to work by using a QStackedWidget object to shuffle between the radio and function widget layouts
+		again easier ssaid than done for a newbie like me
+		had to first learn how this object worked
+		then had to learn more advanced stuff with signals + slots to allow me to create a signal in my genRadio object which emits when a radio is clicked
+		in my mainWindow class, at the end I just slot this signal to a function that switches the display/layout to the next one in the stack, the function widget (radio buttons)
+
+
+
+4/30/2021
+objective: now that I can show only the first set of radio buttons and then only the second iff one of the first set is chosen, clean up the code a bit and 
+           change the labels (split up the opening statement)
+		remove the warning statement
+		change the big block of text
+			keep first sentence
+			split the next two (probably easily done by just adding QLabel in respective classes, then add to their layouts of course)
+				first part shown with first set of radio buttons
+				second part shown with second set
+ -relatively simple to implement
+	just make the button layouts nested
+		first a sub-layout for the label (respective statement)
+		then a sub-layout for the buttons themselves
+		both QHBox (nested within QVBox)
+	simply done by passing the outer layout (not outermost, just the shell for the statement+buttons) when instantiating the Buttons Widget
+		inside the constructor/init
+			create the sub-layouts
+			create the label, center it, and add it to the label sub-layout
+			inside the loop of radio button generation, add each widget to the button sub-layout
+			last thing is to add each sub-layout to the shell (passed) layout in order
+-shorter dev day, debugged a couple things (typos and an array oob)
+
+
+
+5/9/2021
+been a while
+-no dev still, BUT...
+	major milestone...got PyQt5 to work in my virtual environment
+	no more need to use it globally
+	more importantly, can use Pandas (data management/processing) without globally installing it too
+	After much toiling and tying old forum solutions...
+		simply reverting to an older version of PyQt5 (and dependencies) finally got it to work
+		NO MORE "ModuleNotFoundError: sip module not found"
+
+
+5/10/2021
+objective: 2 routes
+	1) start fleshing out the visual/GUI aspect of an operation subwindow
+	2) start the algorithmic/functional aspect of an operation (now that I can use Pandas)
+-ended up Waterfalling and kinda mixing the two routes
+-started by working on the subWindow development for IV calculation
+	-step by step
+	first want a top layer/line with fields to enter
+		Pokemon name (combo box, gen dependent options)
+		pokemon level (line edit_
+		pokemon nature (combo box, gen dependent since I and II don't have)
+-got all 3 to work
+-issue with comboboxes though...
+	options extend to edges of screen (passed the borders of the window)
+	want to extend it only down and only so much (not all the way to the bottom of screen)
+
+
+
+5/14/2021
+objective: fix the combobox issue and continue developing the subwindow functions (worry about tidying up and making cleaner layout later)
+-finally resolved the combobox dropdown issue
+	link to forum post: https://forum.qt.io/topic/11315/limit-the-number-of-visible-items-on-qcombobox/6
+	combobox.setStyleSheet("combobox-popup: 0")
+-added labels to the current fields (name, level, and nature)
+	had to create sublayout (VBox) for each and add Label then field widget
+-separated classes and functions into own source files and more functions
+	more modular and organized
+-added the stats fields (part where user enters their Pokemon's stats and EVs)
+	QGridLayout for the whole thing
+	perimeter (0th row and 0th column) is just labels for respective row/column
+	inner grid is full of QLineEdit fields
+		fields user can fill/edit
+		restricted to 3-digit integers
+
+
+
+5/16/2021 and 5/18/2021
+objective: maybe resize "compute IVs button" and implement the compute IV function for at least genI and genII
+-started implementing the IV computation for genI
+-singals and slots method connecting the push of the button event/signal to the service/slot that is computing the IV
+	-to call a function with parameters (other than self), need to turn it into an inline/lambda
+	i.e. self.btn.clicked.connect(self.checkBtn) -> if the slot/service checkBtn(self)
+             self.btn.clicked.connect(lambda: self.checkBtn(n)) -> if the slot/service checkBtn(self, n)
+-if you just want a one-shot push button (only detect rising/positive edge)
+	-do not setCheckable(True) -> will make it toggable (detect rising and falling edge states)
+-slot function checks the appropriate fields
+	-error checking on empty fields
+		-stop if stats are empty
+		-treat empty EV fields as 0
+-then creates and fills dictionaries fo data from the fields to compute possible IVs and store in its own dictionary (keys are the Stat labels/titles)
+	-started coming up with different means of computing the IVs
+	-wanted to approach Algebraically
+		-isolate the equation for computing stats for the IV
+		-the 2 floor functions complicated this
+			-eventually realized that since I'm using integers/fixed-point -> automatically applies floor (no decimal, round-down)
+	-another approach was sliding windows or some search function to find the compatible IV subrange
+	-eventually decided to use brute force forward iteration (go from 0 to 15 or 31 if gen II+)
+		-decided to do so since just O(16) or O(32) -> O(1) anyways
+		-can optimize later
+-computed stat ranges (min/max) given current level and pokemon base stat and EV's
+-all works (checked against verified/reliable websites/sources)
+-initially was just printing the IV ranges to the console but got it to update the GUI
+	-update the IV labels with the ranges
+		-have to cast the list of ints to a single string (I used a ',' delimeter)
+	-also updated the GUI everytime there's an error (empty fields)
+		-only changed the IV fields to "N/A"
+		-still would like to add error messages
+
+
+
+
+5/22/2021
+objective: maybe resize "compute IVs button", implement the compute IV function for genII, and add error message field/label to GUI and stat ranges
+-short dev day
+-changed/cleaned the code a bit
+-added "stat ranges" fields (min/max given a pokemon's level)
+-implemented compute IV function for genII 
+	-really easy, template/framework all there
+	-just add conditionals and/change some of the reused code
+-able to compute stat ranges even if current stats fields empty/invalid
+	-just need a Pokemon species and level
+	-still won't compute possible IV's of course
+
+
+
+5/23/2021
+objective: maybe resize "compute IVs button" and add error message field/label to GUI
+-added the error message field
+	-just a QLabel that gets (text) modified based on success/failure (and what failed)
+-made it so the first/main window closes after selecting function/operation (which is after choosing a gen)
+-learned how to make a Python script into an executable (automatically includes dependencies)
+	-need pyinstaller (Python) package 
+	-need to manually add non-code dependencies like CSV, TXT, etc files
+-added exit/quit button next to the compute button which closes the window and stops the app
+-tried resizing widgets, but nothing seemed to really work (postponed, rather work on functionality first)
+	-tried resize() and adjustSize() functions
+	-tried changing the QSizePolicy (did cause some changes, may look into this a bit more)
+-started implementing genIII+ IV calculations
+	-slight roadblock when deciding how to implement the nature aspect
+		-thought of hardcoding but that requires long list of if-else
+		-thought of using a nested hashmap (dict), too contrived
+		-finally decided on just using a CSV-to-Dataframe
+			-row: Nature
+			-column: stat
+			-cell: modifier (.9, 1, or 1.1)
+
+
+
+5/24/2021
+objective: start implementing IV calculation for the rest of the gens and modify CSVs to include EVs they provide (or make new ones)
+short day
+-made new CSVs for EV yield for gensIII-VI (thanks Bulbagarden.net)
+	-could've probably made a quick scraper or script to do this but mostly did copy+paste and manual reworking
+-made the natures CSV
+ 
+
+
+5/29/2021
+objective: start implementing IV calculation for the rest of the gens
+-fixed bug
+	would not successfully computed IVs, small logic error in computeIV function
+-successfully implemented IV calculation for the rest of the gens
+-little glitch
+	after successfully computing IV, and blanking the cur_stat field, IV goes blank, should say N/A
+	fixed it, was just re-writing it later, so the N/A got overwritten with a blank entry
+	implemented a flag to avoid this 
+-VERY messy looking code, should try to modularize
+
+
+
+5/30/2021
+objective: modularize the code in the IV_win_setup function (split into functions that can maybe be reusable) 
+short day
+-cleaning up and slightly modularizing code
+-started working on the function that builds the EV calculator subwindow
+	-pretty much the same as the IV one, so made a single function with subcalls depending on whether IV or EV window selected
+	-window shows up, correct labels/fields, just gotta implement the computeButton functionality
+
+
+
+6/4/2021
+objective: start the EV compute button function (should be easier/similar to IV)
+-started by trying to modularize everything
+-try to avoid just copy/pasting IV code with little changes here-and-there
+-instead make single fucntion with subcalls for the specifics
+	-got too complicated, so had to rollback to 5/30/2021 version
+	-ended up doing what I tried to initially avoid -> copy/paste IV code with some modification (i.e. variable names, and the possible ev values to try 65535/256)
+	-WORKS THOUGH! 
+-added logic to bound IV (for EV computation) to 15/31 (depends on gen) and EV (for IV computation) to 65535/256 (depends on gen)
+	-just displays error message when pressing "compute" button with oob fields
+	-should do this with the stat field too (oob of possible stat range)
+-added comment/description blocks to my functions (brief description, Inputs, Outputs)
+
+
+
+objective: modularize the code in the IV_win_setup function (split into functions that can maybe be reusable) 
+	like the conditionals for the printout at the end of each compute block (printout.setText() parts)
+objective: maybe change the blank nature field to be treated like blank EVs (neutral) and change text when invalid stat entry (oob for possible stat range given current level)
+objective: currently have 2 radio button classes sharing similar __init__ functions, make a parent class with just an __init__ and the 2 children radio buttons inherit from it
+
+idea for PkmnTrainerCompanion...
+use stack to keep track of pokemon defeated or items used (vitamins, berries, etc.) or super training (genVI)
+	just append entire EV (or stat for genI/II) rows and sum columns to get EVs (can even display stats to cross check with in-game)
+		set hard limits to col sums (i.e. genIII+ col <= 256, or total <= 512)	
+	undo button to pop most recent entry
+make sure to take into account stat buffing items (power items, macho brace,e etc.) or O-Powers (genVII)
